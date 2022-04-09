@@ -179,6 +179,8 @@ namespace wayland {
 	connection::connection() {
 		LOG_SCOPE_FUNCTION(INFO);
 
+		egl_window = nullptr;
+
 		running = true;
 
 		have_configure = false;
