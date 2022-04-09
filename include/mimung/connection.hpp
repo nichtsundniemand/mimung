@@ -7,21 +7,7 @@
 #include <wayland-egl.h>
 #include "xdg-shell.h"
 
-#include <vulkan/vulkan.h>
-
 namespace wayland {
-	struct vulkan_state {
-		VkInstance instance;
-		VkPhysicalDevice physical_device;
-		VkDevice logical_device;
-
-		VkSurfaceKHR surface;
-		VkSurfaceFormatKHR selected_surface_format;
-		VkPresentModeKHR selected_present_mode;
-		VkSwapchainKHR swapchain;
-		VkQueue queue;
-	};
-
 	/// \brief State of the application
 	/**
 	 * An instance of this class is passed to the wayland callbacks and
@@ -50,9 +36,6 @@ namespace wayland {
 			struct xdg_toplevel* toplevel;
 			/// Wayland EGL window handle
 			struct wl_egl_window* egl_window;
-
-			// Vulkan state
-			struct vulkan_state vulkan_state;
 
 			/// True if a new window layout should be applied
 			bool have_configure;
@@ -128,7 +111,6 @@ namespace wayland {
 			virtual ~connection() = default;
 
 			void create_egl_surface();
-			void create_vulkan_surface();
 
 			bool is_running();
 			void dispatch();
