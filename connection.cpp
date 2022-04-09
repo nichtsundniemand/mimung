@@ -322,6 +322,14 @@ namespace wayland {
 		return running;
 	}
 
+	uint32_t connection::get_width() const {
+		return conf_w;
+	}
+
+	uint32_t connection::get_height() const {
+		return conf_h;
+	}
+
 	void connection::dispatch() {
 		wl_display_dispatch(display);
 	}

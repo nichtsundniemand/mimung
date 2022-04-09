@@ -113,6 +113,8 @@ namespace wayland {
 			void create_egl_surface();
 
 			bool is_running();
+			uint32_t get_width() const;
+			uint32_t get_height() const;
 			void dispatch();
 	};
 };
