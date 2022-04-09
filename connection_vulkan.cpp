@@ -95,7 +95,12 @@ namespace wayland {
 			vulkan_state.instance, &surface_create_info, nullptr, &vulkan_state.surface
 		);
 
-		// Get Format
+		// Create swapchain
+		VkSurfaceCapabilitiesKHR surface_capabilities;
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+			vulkan_state.physical_device, vulkan_state.surface, &surface_capabilities
+		);
+
 		uint32_t surface_format_count;
 		vkGetPhysicalDeviceSurfaceFormatsKHR(
 			vulkan_state.physical_device, vulkan_state.surface, &surface_format_count, nullptr
@@ -113,8 +118,8 @@ namespace wayland {
 
 			bool found = false;
 			for(auto& surface_format: surface_formats) {
-				if(surface_format.format == VK_FORMAT_R8G8B8A8_UNORM) {
-					LOG_F(INFO, "Found format with VK_FORMAT_R8G8B8A8_UNORM!");
+				if(surface_format.format == VK_FORMAT_R8G8B8A8_SRGB) {
+					LOG_F(INFO, "Found format with VK_FORMAT_R8G8B8A8_SRGB!");
 					vulkan_state.selected_surface_format = surface_format;
 					found = true;
 					break;
@@ -126,9 +131,60 @@ namespace wayland {
 			}
 		}
 
-		// Select queue
+		uint32_t present_mode_count;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(
+			vulkan_state.physical_device, vulkan_state.surface, &present_mode_count, nullptr
+		);
+
+		LOG_F(INFO, "Present modes available: %d", present_mode_count);
+
+		std::vector<VkPresentModeKHR> present_modes(present_mode_count);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(
+			vulkan_state.physical_device, vulkan_state.surface, &present_mode_count, present_modes.data()
+		);
+
+		{
+			LOG_SCOPE_F(INFO, "Present modes queried: %d", present_mode_count);
+
+			bool found = false;
+			for(auto& present_mode: present_modes) {
+				if(present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+					LOG_F(INFO, "Found present mode VK_PRESENT_MODE_MAILBOX_KHR!");
+					vulkan_state.selected_present_mode = present_mode;
+					found = true;
+					break;
+				}
+			}
+
+			if(!found) {
+				LOG_F(ERROR, "Could not find preffered present mode - defaulting to first found");
+				vulkan_state.selected_present_mode = present_modes[0];
+			}
+		}
+
+		// At this point our wayland surface should be sizeless. Since we have to
+		//  set something, we just use the minimal allowed surface extend reported
+		//  by vulkan
+		VkExtent2D surface_extent = surface_capabilities.minImageExtent;
+
 		uint32_t queue_family_count;
 		vkGetPhysicalDeviceQueueFamilyProperties(vulkan_state.physical_device, &queue_family_count, nullptr);
+
+		VkSwapchainCreateInfoKHR swapchain_create_info{
+			.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+			.surface = vulkan_state.surface,
+			.minImageCount = surface_capabilities.minImageCount,
+			.imageFormat = vulkan_state.selected_surface_format.format,
+			.imageColorSpace = vulkan_state.selected_surface_format.colorSpace,
+			.imageExtent = surface_extent,
+			.imageArrayLayers = 1,
+			.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
+			.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+			.presentMode = vulkan_state.selected_present_mode,
+		};
+
+		vkCreateSwapchainKHR(vulkan_state.logical_device, &swapchain_create_info, nullptr, &vulkan_state.swapchain);
 
 		LOG_F(INFO, "Queue families available: %d", queue_family_count);
 
@@ -147,6 +203,15 @@ namespace wayland {
 		}
 
 		vkGetDeviceQueue(vulkan_state.logical_device, 0, 0, &vulkan_state.queue);
+
+		uint32_t image_index = 0;
+		VkPresentInfoKHR present_info{
+			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+			.swapchainCount = 1,
+			.pSwapchains = &vulkan_state.swapchain,
+			.pImageIndices = &image_index,
+		};
+		vkQueuePresentKHR(vulkan_state.queue, &present_info);
 	}
 
 	const struct connection_vulkan::vulkan_state *connection_vulkan::get_vulkan_state() const {
@@ -159,22 +224,39 @@ namespace wayland {
 			vulkan_state.physical_device, vulkan_state.surface, &surface_capabilities
 		);
 
-		// vkDestroySwapchainKHR(vulkan_state.logical_device, vulkan_state.swapchain, nullptr);
+		vkDestroySwapchainKHR(vulkan_state.logical_device, vulkan_state.swapchain, nullptr);
 
-		vulkan_state.swapchain = std::make_unique<volcano::swapchain_surface>(
-			vulkan_state.physical_device,
-			vulkan_state.logical_device,
-			vulkan_state.surface,
-			width,
-			height,
-			vulkan_state.renderpass,
-			VK_FORMAT_R8G8B8A8_UNORM,
-			VK_FORMAT_D32_SFLOAT
-		);
+		VkExtent2D surface_extent {
+			.width = (uint32_t)width,
+			.height = (uint32_t)height
+		};
+
+		VkSwapchainCreateInfoKHR swapchain_create_info{
+			.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+			.surface = vulkan_state.surface,
+			.minImageCount = surface_capabilities.minImageCount,
+			.imageFormat = vulkan_state.selected_surface_format.format,
+			.imageColorSpace = vulkan_state.selected_surface_format.colorSpace,
+			.imageExtent = surface_extent,
+			.imageArrayLayers = 1,
+			.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
+			.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+			.presentMode = vulkan_state.selected_present_mode,
+		};
+
+		vkCreateSwapchainKHR(vulkan_state.logical_device, &swapchain_create_info, nullptr, &vulkan_state.swapchain);
+
 		LOG_F(INFO, "Recreated swapchain");
 
-		vulkan_state.swapchain->acquire_next_frame();
-		vulkan_state.swapchain->present(vulkan_state.queue);
+		uint32_t image_index = 0;
+		VkPresentInfoKHR present_info{
+			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+			.swapchainCount = 1,
+			.pSwapchains = &vulkan_state.swapchain,
+			.pImageIndices = &image_index,
+		};
+		vkQueuePresentKHR(vulkan_state.queue, &present_info);
 	}
 
 	void connection_vulkan::on_frame() {
@@ -184,14 +266,5 @@ namespace wayland {
 
 	void connection_vulkan::on_close() {
 
-	}
-
-
-	void connection_vulkan::set_renderpass(const VkRenderPass& renderpass) {
-		vulkan_state.renderpass = renderpass;
-	}
-
-	void connection_vulkan::set_swapchain(std::unique_ptr<volcano::swapchain_surface> swapchain) {
-		vulkan_state.swapchain = std::move(swapchain);
 	}
 };
