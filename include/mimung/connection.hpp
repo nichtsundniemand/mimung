@@ -5,7 +5,7 @@
 #include <EGL/eglext.h>
 
 #include <wayland-egl.h>
-#include "xdg-shell.h"
+#include <xdg-shell.h>
 
 namespace wayland {
 	/// \brief State of the application
