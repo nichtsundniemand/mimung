@@ -71,6 +71,8 @@ namespace wayland {
 		// 	((connection*)wl_data)->egl_display,
 		// 	((connection*)wl_data)->egl_surface
 		// );
+
+		((connection *)wl_data)->on_frame();
 	}
 
 	void connection::xdg_wm_base_ping_handler(
@@ -157,6 +159,8 @@ namespace wayland {
 					((connection*)wl_data)->egl_display,
 					((connection*)wl_data)->egl_surface
 				);
+
+				this_conn->on_resize(this_conn->conf_w, this_conn->conf_h);
 			}
 		}
 	}
@@ -182,6 +186,7 @@ namespace wayland {
 		LOG_SCOPE_FUNCTION(INFO);
 		LOG_F(INFO, "Handler called!");
 		((connection*)wl_data)->running = false;
+		((connection*)wl_data)->on_close();
 	}
 
 	void connection::global_registry_handler(
@@ -203,6 +208,14 @@ namespace wayland {
 			);
 		}
 		LOG_F(INFO, " - Listener ran (%s)!", interface);
+	}
+
+	struct wl_display *connection::get_display() {
+		return display;
+	}
+
+	struct wl_surface *connection::get_surface() {
+		return surface;
 	}
 
 	connection::connection() {
@@ -230,7 +243,10 @@ namespace wayland {
 		xdg_toplevel_add_listener(toplevel, &xdg_toplevel_listener, this);
 
 		wl_surface_commit(surface);
-		wl_display_roundtrip(display);
+		// FIXME: Cannot roundtrip at this point because
+		//   of virtual dispatch :/
+		//   
+		// wl_display_roundtrip(display);
 
 		LOG_F(INFO, "Wayland window setup complete!");
 

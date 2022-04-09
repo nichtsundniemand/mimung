@@ -115,8 +115,17 @@ namespace wayland {
 				NULL
 			};
 
+		protected:
+			struct wl_display *get_display();
+			struct wl_surface *get_surface();
+
+			virtual void on_resize(int32_t width, int32_t height) = 0;
+			virtual void on_frame() = 0;
+			virtual void on_close() = 0;
+
 		public:
 			connection();
+			virtual ~connection() = default;
 
 			void create_egl_surface();
 			void create_vulkan_surface();
