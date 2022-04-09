@@ -94,8 +94,6 @@ namespace wayland {
 		if(((connection*)wl_data)->have_configure) {
 			connection *this_conn = (connection *)wl_data;
 
-			xdg_surface_ack_configure(xdg_surface, serial);
-			LOG_F(INFO, " - ack_configure(%d)", serial);
 			if(((connection*)wl_data)->egl_window != NULL) {
 				wl_egl_window_resize(
 					((connection*)wl_data)->egl_window,
@@ -119,6 +117,9 @@ namespace wayland {
 
 				this_conn->on_resize(this_conn->conf_w, this_conn->conf_h);
 			}
+
+			xdg_surface_ack_configure(xdg_surface, serial);
+			LOG_F(INFO, " - ack_configure(%d)", serial);
 		}
 	}
 
