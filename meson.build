@@ -46,14 +46,10 @@ wayland_xdg_shell_dep = declare_dependency(
 
 mimung_lib = library(
 	'mimung',
-	[
-		'connection.cpp',
-	],
+	'connection.cpp',
 	dependencies: [
-		egl_dep,
 		loguru_dep,
 		wayland_dep,
-		wayland_egl_dep,
 		wayland_xdg_shell_dep,
 	],
 	include_directories: [
