@@ -73,6 +73,21 @@ mimung_egl_lib = library(
 	]
 )
 
+vulkan_dep = dependency('vulkan')
+
+mimung_vulkan_lib = library(
+	'mimung_vulkan',
+	'connection_vulkan.cpp',
+	dependencies: [
+		loguru_dep,
+		vulkan_dep,
+	],
+	link_with: mimung_lib,
+	include_directories: [
+		mimung_include
+	]
+)
+
 mimung_dep = declare_dependency(
 	link_with: mimung_lib,
 	include_directories: public_include,
@@ -83,10 +98,19 @@ mimung_egl_dep = declare_dependency(
 	include_directories: public_include,
 )
 
+mimung_vulkan_dep = declare_dependency(
+	link_with: mimung_vulkan_lib,
+	include_directories: public_include,
+)
+
 meson.override_dependency(
 	'mimung', mimung_dep
 )
 
 meson.override_dependency(
 	'mimung-egl', mimung_egl_dep
+)
+
+meson.override_dependency(
+	'mimung-vulkan', mimung_vulkan_dep
 )
