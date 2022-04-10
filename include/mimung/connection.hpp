@@ -1,10 +1,7 @@
 #ifndef CONNECTION_HPP
 	#define CONNECTION_HPP
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
-#include <wayland-egl.h>
+#include <wayland-client.h>
 #include <xdg-shell.h>
 
 namespace wayland {
@@ -34,21 +31,12 @@ namespace wayland {
 			struct xdg_surface* xdg_surface;
 			/// XDG window toplevel handle
 			struct xdg_toplevel* toplevel;
-			/// Wayland EGL window handle
-			struct wl_egl_window* egl_window;
 
 			/// True if a new window layout should be applied
 			bool have_configure;
 			/// \{ New dimensions of XDG window
 			int32_t conf_w, conf_h;
 			/// \}
-
-			/// EGL display handle
-			EGLDisplay egl_display;
-			/// EGL context handle
-			EGLContext egl_context;
-			/// EGL surface handle
-			EGLSurface egl_surface;
 
 			static void wl_callback_done_listener(
 				void* wl_data, struct wl_callback* wl_callback, uint32_t callback_data
@@ -109,8 +97,6 @@ namespace wayland {
 		public:
 			connection();
 			virtual ~connection() = default;
-
-			void create_egl_surface();
 
 			bool is_running();
 			uint32_t get_width() const;
