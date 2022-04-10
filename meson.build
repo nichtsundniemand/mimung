@@ -58,11 +58,34 @@ mimung_lib = library(
 	]
 )
 
+mimung_egl_lib = library(
+	'mimung_egl',
+	'connection_egl.cpp',
+	dependencies: [
+		egl_dep,
+		loguru_dep,
+		wayland_egl_dep,
+	],
+	link_with: mimung_lib,
+	include_directories: [
+		mimung_include
+	]
+)
+
 mimung_dep = declare_dependency(
 	link_with: mimung_lib,
 	include_directories: public_include,
 )
 
+mimung_egl_dep = declare_dependency(
+	link_with: mimung_egl_lib,
+	include_directories: public_include,
+)
+
 meson.override_dependency(
 	'mimung', mimung_dep
+)
+
+meson.override_dependency(
+	'mimung-egl', mimung_egl_dep
 )
