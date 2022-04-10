@@ -10,10 +10,8 @@ project(
 public_include = include_directories('include')
 mimung_include = include_directories('include/mimung')
 
-egl_dep = dependency('egl')
 loguru_dep = dependency('loguru')
 wayland_dep = dependency('wayland-client')
-wayland_egl_dep = dependency('wayland-egl')
 wayland_protocols_dep = dependency('wayland-protocols')
 
 # Inspired by mesa's wayland-protocol generation
@@ -57,6 +55,9 @@ mimung_lib = library(
 		public_include,
 	]
 )
+
+egl_dep = dependency('egl')
+wayland_egl_dep = dependency('wayland-egl')
 
 mimung_egl_lib = library(
 	'mimung_egl',
