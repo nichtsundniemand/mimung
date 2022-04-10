@@ -7,7 +7,7 @@
 
 #include <EGL/egl.h>
 
-namespace wayland {
+namespace mimung {
 	class connection_egl: public connection {
 		public:
 			struct egl_state {

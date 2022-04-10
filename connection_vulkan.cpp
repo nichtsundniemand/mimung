@@ -6,7 +6,7 @@
 
 #include <volcano/swapchain_surface.hpp>
 
-namespace wayland {
+namespace mimung {
 	connection_vulkan::connection_vulkan() {
 		LOG_SCOPE_FUNCTION(INFO);
 

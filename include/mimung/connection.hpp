@@ -4,7 +4,7 @@
 #include <wayland-client.h>
 #include <xdg-shell.h>
 
-namespace wayland {
+namespace mimung {
 	/// \brief State of the application
 	/**
 	 * An instance of this class is passed to the wayland callbacks and

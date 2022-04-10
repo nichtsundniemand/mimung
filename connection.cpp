@@ -7,7 +7,7 @@
 
 #include "connection.hpp"
 
-namespace wayland {
+namespace mimung {
 	void connection::wl_callback_done_listener(
 		void* wl_data, struct wl_callback* wl_callback, uint32_t callback_data
 	) {

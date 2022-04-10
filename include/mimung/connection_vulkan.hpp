@@ -5,7 +5,7 @@
 
 #include <vulkan/vulkan.h>
 
-namespace wayland {
+namespace mimung {
 	class connection_vulkan: public connection {
 		public:
 			struct vulkan_state {

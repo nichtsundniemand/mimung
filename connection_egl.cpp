@@ -22,7 +22,7 @@ EGLAttrib const debug_attr[] = {
 	EGL_NONE
 };
 
-namespace wayland {
+namespace mimung {
 	connection_egl::connection_egl() {
 		LOG_SCOPE_FUNCTION(INFO);
 
