@@ -1,10 +1,10 @@
 #include "connection_vulkan.hpp"
 
+#include <vector>
+
 #include <loguru.hpp>
 
 #include <vulkan/vulkan_wayland.h>
-
-#include <volcano/swapchain_surface.hpp>
 
 namespace mimung {
 	connection_vulkan::connection_vulkan() {
@@ -260,8 +260,14 @@ namespace mimung {
 	}
 
 	void connection_vulkan::on_frame() {
-		vulkan_state.swapchain->acquire_next_frame();
-		vulkan_state.swapchain->present(vulkan_state.queue);
+		uint32_t image_index = 0;
+		VkPresentInfoKHR present_info{
+			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+			.swapchainCount = 1,
+			.pSwapchains = &vulkan_state.swapchain,
+			.pImageIndices = &image_index,
+		};
+		vkQueuePresentKHR(vulkan_state.queue, &present_info);
 	}
 
 	void connection_vulkan::on_close() {
